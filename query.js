@@ -79,3 +79,132 @@ db.products.deleteOne(
 db.products.find({name:{$exists: true}})
 
 db.products.find({name:{$exists: false}})
+
+db.createCollection("user")
+db.users.renameCollection("users")
+
+db.users.insertMany(
+    [
+        {
+            name:"Ekshin",
+            age:21,
+            email:"ekshin@gmail.com"
+        },
+        {
+            name:"Leela",
+            age:22,
+            email:"leela@gmail.com"
+        },
+        {
+            name:"ajay",
+            age:21,
+            email:"ajay@gmail.com"
+        },
+        {
+            name:"vijay",
+            age:23,
+            email:"vijay@gmail.com"
+        }
+    ]
+);
+
+db.users.updateMany(
+    {},
+    {$push:{products:["Iphone 15 Pro Max","Samsung"]}}
+)
+
+db.users.updateOne(
+    {name:"Ekshin"},
+    {$push:{products:"Realme"}}
+)
+
+db.users.find({name:{$eq:"Ekshin"}})
+
+db.users.updateOne(
+    {name:"Ekshin"},
+    {$pop:{products:1}} 
+)
+
+db.users.updateOne(
+    {name:"Ekshin"},
+    {$addToSet:{products:"Samsung"}}
+)
+
+db.users.updateOne(
+    {name:"Ekshin"},
+    {$pull:{products:"Samsung"}}
+)
+
+db.users.find(
+    {email:"ekshin@gmail.com"}
+).explain("executionStats")
+
+db.users.getIndexes()
+
+db.users.createIndexes({email:1})
+
+db.users.find(
+    {},
+    {_id:0,name:1}
+)
+
+db.users.find(
+    {},
+    {_id:0,name:1}
+).sort({name:1})
+
+db.users.find(
+    {},
+    {_id:0,name:1}
+).collation({locale:"en",strength:2}).sort({name:1})
+
+db.users.aggregate(
+    [
+        {$match:{age:{$gt:20}}}
+    ]
+)
+
+db.users.aggregate(
+    [
+        {$project:{_id:0,name:0,age:0}}
+    ]
+)
+
+db.users.aggregate(
+    [
+        {$project:{_id:0,name:1,age:1}}
+    ]
+)
+
+db.users.aggregate(
+    [
+        {$project:{_id:0,name:1,age:1}},
+        {$sort:{name:1}},
+        {$collation:{locale:"en",strength:2}},
+        {$match:{age:{$gt:21}}},
+        {$skip:1},
+        {$limit:2}
+    ]
+) //getting error
+
+db.users.aggregate(
+    [
+        {$project:{_id:0,name:1,age:1}},
+        {$sort:{name:1}},
+        {$match:{age:{$gt:21}}},
+        {$skip:1},
+        {$limit:2}
+    ]
+)
+
+db.users.aggregate(
+    [
+        {$group:{_id:"$age", totalUsers:{$sum:1}}}
+    ]
+)
+db.users.aggregate(
+    [
+        {$group:{_id:"$name", Maximumage:{$max:"$age"}}}
+    ]
+)
+//$min, $avg, $sum, $first, $last,$multiply
