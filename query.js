@@ -208,3 +208,221 @@ db.users.aggregate(
     ]
 )
 //$min, $avg, $sum, $first, $last,$multiply
+
+// 04/02/2026
+
+db.users.updateOne(
+    {name:"vijay"},
+    {$set:{address:
+        {
+            address1:"xyz street",
+            city:"chennai",
+            state:"Tamil Nadu",
+        }
+    }}
+)
+
+db.users.find({},{name:1,age:1,"address.city":1})
+
+db.users.updateMany(
+    {},
+    {$set:{skills:["communication","teamwork"]}}
+)
+
+db.users.updateMany(
+    {},
+    {$unset:{skills:""}}
+)
+db.users.aggregate([
+    {$project:
+        {
+            _id:0,
+            name:1,
+            products:1,
+        }
+    },
+    {$unwind:"$products"}
+])
+
+db.users.updateOne(
+    {name:"ajay"},
+    {$set:{
+        salary:120000
+    }}
+)
+
+db.users.aggregate([
+    {$project:{
+        _id:0,
+        name:1,
+        salary:1,
+        grade:{
+            $cond:[
+                {$gt:["$salary",100000]},
+                "Grade A",
+                "Grade B"
+            ]
+        }
+    }}
+])
+
+db.users.aggregate([
+    {$project:{
+        _id:0,
+        name:1,
+        salary:1,
+        grade:{
+            $cond:{
+            if:{$gt:["$salary",100000]},
+            then:"Grade A",
+            else:"Grade B",
+            }
+        }
+    }}
+])
+
+db.users.aggregate([
+    {$project:{
+        _id:0,
+        name:1,
+        salary:1,
+        grade:{
+            $switch:{
+                branches:[
+                    {
+                        case:{$gte:["$salary",100000]},
+                        then:"Grade A"
+                    },
+                    {
+                        case:{$gt:["$salary",70000]},
+                        then:"Grade B",
+                    }
+                ],
+                default:"grade C"
+            }
+        }
+    }}
+])
+
+
+db.orders.insertMany([
+    {
+        usd: ObjectId('6982012d057833ac9a628ca0'),
+        product: "Iphone 15 Pro Max",
+        price:120000,
+        quantity:1 
+    },
+    {
+        usd: ObjectId('6982012d057833ac9a628ca1'),
+        product: "Samsung",
+        price:90000,
+        quantity:2
+    },
+    {
+        usd: ObjectId('6982012d057833ac9a628ca2'),
+        product: "OnePlus",
+        price:70000,
+        quantity:1
+    },
+    {
+        usd: ObjectId('6982012d057833ac9a628ca3'),
+        product: "Iphone 15 Pro Max",
+        price:120000,
+        quantity:1
+    }
+])
+
+db.orders.aggregate([
+    {$project:{
+        _id:0,
+        product:1,
+        price:1,
+        totalAmount:{$multiply:["$price","$quantity"]}
+    }}
+])
+
+db.users.aggregate([
+    {$lookup:{
+        from:"orders",
+        localField:"_id",
+        foreignField:"usd",
+        as:"user_orders"
+    }}
+])
+
+db.users.aggregate([
+    {$lookup:{
+        let:{userId:"$_id"},
+        from:"orders",
+        pipeline:[
+            {
+                $match:{
+                    $expr:{
+                        $eq:["$usd","$$userId"]
+                    }
+                }
+            }
+        ],
+        as:"user_orders"
+    }}
+])
+
+
+db.users.aggregate([
+    {$lookup:{
+        from:"orders",
+        localField:"_id",
+        foreignField:"usd",
+        as:"user_orders"
+    }},
+    {$project:{
+        _id:0,
+        name:1,
+        orders:"$user_orders.product"
+    }}
+])
+
+db.users.aggregate([
+    {$lookup:{
+        let:{userId:"$_id"},
+        from:"orders",
+        pipeline:[
+            {
+                $match:{
+                    $expr:{
+                        $eq:["$usd","$$userId"]
+                    }
+                }
+            }
+        ],
+        as:"user_orders"
+    }},
+    {$project:{
+        _id:0,
+        name:1,
+        orders:"$user_orders.product"
+    }}
+])
+
+db.users.aggregate([
+    {$lookup:{
+        let:{userId:"$_id"},
+        from:"orders",
+        pipeline:[
+            {
+                $match:{
+                    $expr:{
+                        $eq:["$usd","$$userId"]
+                    }
+                }
+            }
+        ],
+        as:"user_orders"
+    }},
+    {$unwind:"$user_orders"},
+    {$project:{
+        _id:0,
+        name:1,
+        orders:"$user_orders.product"
+    }}
+])
